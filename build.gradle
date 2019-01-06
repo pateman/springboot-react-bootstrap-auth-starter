@@ -1,0 +1,73 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+buildscript {
+    ext {
+        springBootVersion = '2.1.1.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'war'
+
+group = 'pl.pateman'
+version = '0.1.0'
+sourceCompatibility = 11
+
+bootWar {
+    mainClassName = 'pl.pateman.springbootreactbootstrapauthstarter.SpringbootReactBootstrapAuthStarterApplication'
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    providedRuntime
+}
+
+dependencies {
+    implementation('org.springframework.boot:spring-boot-starter-security')
+    implementation('org.springframework.boot:spring-boot-starter-web')
+    runtimeOnly('org.springframework.boot:spring-boot-devtools')
+    runtimeOnly('com.h2database:h2')
+    providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    testImplementation('org.springframework.security:spring-security-test')
+}
+
+task bootWarWithReact(type: Exec) {
+    group = 'build'
+    description = 'Bundles React app into the WAR and builds the WAR'
+
+    String npmCmd = Os.isFamily(Os.FAMILY_WINDOWS) ? 'npm.cmd' : 'npm';
+
+    workingDir 'app'
+    commandLine npmCmd, 'run', 'build'
+    
+    outputs.dir 'src/main/resources/static/'
+
+    doLast {
+        def reactBuildDirPath = 'app/build'
+        def reactBuildDir = new File(reactBuildDirPath)
+
+        def copyResult = copy {
+            from reactBuildDirPath
+            into 'src/main/resources/static'
+        }
+
+        if (copyResult.didWork) {
+            reactBuildDir.deleteDir()
+        }
+    }
+
+    finalizedBy = ['bootWar']
+}
