@@ -30,9 +30,9 @@ public class JSONAuthenticationFilter extends UsernamePasswordAuthenticationFilt
              JsonReader jsonReader = new JsonReader(isr)) {
             JSONAuthenticationForm form = gson.fromJson(jsonReader, JSONAuthenticationForm.class);
 
-            authRequest = new UsernamePasswordAuthenticationToken(form.getUsername(), form.getPassword());
+            authRequest = new JSONAuthenticationToken(form.getUsername(), form.getPassword(), form.isRememberMe());
         } catch (IOException e) {
-            authRequest = new UsernamePasswordAuthenticationToken("", "");
+            authRequest = new JSONAuthenticationToken("", "", false);
         }
         setDetails(request, authRequest);
         return this.getAuthenticationManager().authenticate(authRequest);
@@ -41,6 +41,7 @@ public class JSONAuthenticationFilter extends UsernamePasswordAuthenticationFilt
     private class JSONAuthenticationForm {
         private String username;
         private String password;
+        private boolean rememberMe;
 
         public String getUsername() {
             return username;
@@ -56,6 +57,14 @@ public class JSONAuthenticationFilter extends UsernamePasswordAuthenticationFilt
 
         public void setPassword(String password) {
             this.password = password;
+        }
+
+        public boolean isRememberMe() {
+            return rememberMe;
+        }
+
+        public void setRememberMe(boolean rememberMe) {
+            this.rememberMe = rememberMe;
         }
     }
 }

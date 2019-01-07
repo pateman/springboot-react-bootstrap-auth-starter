@@ -10,6 +10,7 @@ class LoginPage extends Component {
 
         this.loginRef = React.createRef();
         this.passwordRef = React.createRef();
+        this.rememberMeRef = React.createRef();
     }
 
     loginFormHandler = (evt) => {
@@ -17,7 +18,8 @@ class LoginPage extends Component {
 
         axios.post('/login', {
             username: this.loginRef.current.value,
-            password: this.passwordRef.current.value
+            password: this.passwordRef.current.value,
+            rememberMe: this.rememberMeRef.current.checked
         });
     };
 
@@ -39,7 +41,7 @@ class LoginPage extends Component {
                 />
                 <div className="checkbox mb-3">
                     <label>
-                        <input type="checkbox" value="remember-me"/>
+                        <input type="checkbox" value="remember-me" ref={this.rememberMeRef}/>
                         &nbsp;Remember me
                     </label>
                 </div>

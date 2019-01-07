@@ -1,23 +1,23 @@
 package pl.pateman.springbootreactbootstrapauthstarter.configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.provisioning.InMemoryUserDetailsManagerConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserCache;
+import org.springframework.security.core.userdetails.cache.NullUserCache;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import pl.pateman.springbootreactbootstrapauthstarter.security.JSONAuthenticationFilter;
-import pl.pateman.springbootreactbootstrapauthstarter.security.LoginHandler;
-import pl.pateman.springbootreactbootstrapauthstarter.security.RestAuthenticationEntryPoint;
-
-import static pl.pateman.springbootreactbootstrapauthstarter.security.SecurityRole.ADMIN;
-import static pl.pateman.springbootreactbootstrapauthstarter.security.SecurityRole.USER;
+import pl.pateman.springbootreactbootstrapauthstarter.security.*;
 
 @Configuration
 @EnableWebSecurity
@@ -25,14 +25,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String LOGIN_URL = "/login";
     private static final String LOGOUT_URL = "/logout";
+    private static final String REMEMBER_ME_KEY = "uniqueAndSecret";
 
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final LoginHandler loginHandler;
+    private final MessageSource messageSource;
 
     @Autowired
-    public WebSecurityConfig(RestAuthenticationEntryPoint restAuthenticationEntryPoint, LoginHandler loginHandler) {
+    public WebSecurityConfig(RestAuthenticationEntryPoint restAuthenticationEntryPoint, LoginHandler loginHandler, MessageSource messageSource) {
         this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
         this.loginHandler = loginHandler;
+        this.messageSource = messageSource;
     }
 
     private JSONAuthenticationFilter jsonAuthenticationFilter() throws Exception {
@@ -41,6 +44,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         filter.setAuthenticationFailureHandler(loginHandler);
         filter.setAuthenticationManager(authenticationManager());
         filter.setFilterProcessesUrl(LOGIN_URL);
+        filter.setRememberMeServices(rememberMeServices());
         return filter;
     }
 
@@ -73,14 +77,36 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         builder.withUser("admin")
                 .password(encoder().encode("admin"))
-                .roles(String.valueOf(ADMIN));
+                .roles("ADMIN");
         builder.withUser("user")
                 .password(encoder().encode("user"))
-                .roles(String.valueOf(USER));
+                .roles("USER");
+
+        auth.authenticationProvider(authenticationProvider());
     }
 
     @Bean
     public PasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public RememberMeServices rememberMeServices() {
+        return new JSONRememberMeServices(REMEMBER_ME_KEY, userDetailsService());
+    }
+
+    @Bean
+    public UserCache userCache() {
+        return new NullUserCache();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        JSONAuthenticationProvider authenticationProvider = new JSONAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService());
+        authenticationProvider.setMessageSource(messageSource);
+        authenticationProvider.setUserCache(userCache());
+        authenticationProvider.setPasswordEncoder(encoder());
+        return authenticationProvider;
     }
 }
