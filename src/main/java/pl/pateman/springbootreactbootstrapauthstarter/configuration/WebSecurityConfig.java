@@ -17,7 +17,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import pl.pateman.springbootreactbootstrapauthstarter.security.*;
+import pl.pateman.springbootreactbootstrapauthstarter.security.JSONAuthenticationFilter;
+import pl.pateman.springbootreactbootstrapauthstarter.security.JSONAuthenticationProvider;
+import pl.pateman.springbootreactbootstrapauthstarter.security.JSONLoginHandler;
+import pl.pateman.springbootreactbootstrapauthstarter.security.JSONRememberMeServices;
 
 @Configuration
 @EnableWebSecurity
@@ -27,13 +30,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String LOGOUT_URL = "/logout";
     private static final String REMEMBER_ME_KEY = "uniqueAndSecret";
 
-    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-    private final LoginHandler loginHandler;
+    private final JSONLoginHandler loginHandler;
     private final MessageSource messageSource;
 
     @Autowired
-    public WebSecurityConfig(RestAuthenticationEntryPoint restAuthenticationEntryPoint, LoginHandler loginHandler, MessageSource messageSource) {
-        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
+    public WebSecurityConfig(JSONLoginHandler loginHandler, MessageSource messageSource) {
         this.loginHandler = loginHandler;
         this.messageSource = messageSource;
     }
@@ -53,9 +54,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf()
                 .disable();
 
-        http.exceptionHandling()
-                .authenticationEntryPoint(restAuthenticationEntryPoint);
-
         http.authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/", "/*.json", "/static/**").permitAll()
                 .antMatchers(HttpMethod.POST, LOGIN_URL).permitAll()
@@ -66,6 +64,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll();
 
         http.logout()
+                .deleteCookies("JSESSIONID", "remember-me")
                 .permitAll();
 
         http.addFilterAt(jsonAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

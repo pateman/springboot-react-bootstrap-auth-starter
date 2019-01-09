@@ -2,7 +2,6 @@ package pl.pateman.springbootreactbootstrapauthstarter.security;
 
 import com.google.gson.Gson;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -14,13 +13,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 @Component
-public class LoginHandler implements AuthenticationSuccessHandler, AuthenticationFailureHandler {
+public class JSONLoginHandler implements AuthenticationSuccessHandler, AuthenticationFailureHandler {
 
     private final Gson gson;
 
-    public LoginHandler() {
+    public JSONLoginHandler() {
         gson = new Gson();
     }
 
@@ -35,13 +35,13 @@ public class LoginHandler implements AuthenticationSuccessHandler, Authenticatio
         response.flushBuffer();
     }
 
-    private Authentication createDummyAuthentication() {
-        return new UsernamePasswordAuthenticationToken("", "");
+    private Object createAuthenticationFailureResponse(AuthenticationException ex) {
+        return Collections.singletonMap("error", ex.getMessage());
     }
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        sendJSONResponse(response, HttpServletResponse.SC_UNAUTHORIZED, createDummyAuthentication());
+        sendJSONResponse(response, HttpServletResponse.SC_UNAUTHORIZED, createAuthenticationFailureResponse(exception));
     }
 
     @Override
