@@ -1,4 +1,4 @@
-#Spring Boot + Spring Security + React + Bootstrap = Starter Kit
+# Spring Boot + Spring Security + React + Bootstrap = Starter Kit
 
 This repository contains a starter kit for a Java (I use Java 11) application based on Spring Boot (2.1.1), which uses React (16.7). Additionally, there's Spring Security integrated and fine-tuned so that it supports `application/json` login. Oh, there's also `reactstrap` in there for you to quickly get your next super app running!
 
