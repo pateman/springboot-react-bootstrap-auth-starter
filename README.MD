@@ -12,6 +12,7 @@ There's the `JSONLoginHandler` that returns appropriate responses to the client,
 Another class worth mentioning is `JSONAuthenticationProvider`. It's needed, because the default Spring's provider creates a `UsernamePasswordAuthenticationToken` when authentication succeeds, which is not what I want. I want my token class to be returned, so that `JSONRememberMeServices` can use it to create the 'remember-me' cookie. Nothing too fancy going on there, just making sure that I have the correct instance in the end.
 
 There are two different users:
+
 * **Login**: admin, **Password**: admin, **Role**: ADMIN
 * **Login**: user, **Password**: user, **Role**: USER
 
