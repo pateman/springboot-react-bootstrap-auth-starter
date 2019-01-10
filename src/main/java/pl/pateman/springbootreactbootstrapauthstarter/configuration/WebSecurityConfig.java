@@ -26,8 +26,8 @@ import pl.pateman.springbootreactbootstrapauthstarter.security.JSONRememberMeSer
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private static final String LOGIN_URL = "/login";
-    private static final String LOGOUT_URL = "/logout";
+    private static final String LOGIN_URL = "/api/login";
+    private static final String LOGOUT_URL = "/api/logout";
     private static final String REMEMBER_ME_KEY = "uniqueAndSecret";
 
     private final JSONLoginHandler loginHandler;
@@ -58,6 +58,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/", "/*.json", "/static/**").permitAll()
                 .antMatchers(HttpMethod.POST, LOGIN_URL).permitAll()
                 .antMatchers(HttpMethod.POST, LOGOUT_URL).permitAll()
+                .antMatchers("/api/me").permitAll()
                 .antMatchers("/api/**").authenticated();
 
         http.formLogin()
@@ -65,6 +66,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.logout()
                 .deleteCookies("JSESSIONID", "remember-me")
+                .logoutUrl(LOGOUT_URL)
+                .logoutSuccessUrl("/api/me")
                 .permitAll();
 
         http.addFilterAt(jsonAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

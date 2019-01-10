@@ -3,7 +3,7 @@ import styles from './LoginPage.module.css';
 import logo from '../../logo.svg';
 import {Alert} from 'reactstrap';
 import PropTypes from 'prop-types';
-import axios from 'axios';
+import AuthService from '../../services/AuthService/AuthService';
 import {Redirect} from 'react-router-dom';
 
 class LoginPage extends Component {
@@ -29,16 +29,15 @@ class LoginPage extends Component {
         evt.preventDefault();
 
         this.setState({loginError: null}, () => {
-            axios.post('/login', {
-                username: this.loginRef.current.value,
-                password: this.passwordRef.current.value,
-                rememberMe: this.rememberMeRef.current.checked
-            })
-                .then(resp => {
+            AuthService.login(
+                this.loginRef.current.value,
+                this.passwordRef.current.value,
+                this.rememberMeRef.current.checked,
+                resp => {
                     this.props.onLoginSuccess(resp);
                     this.props.history.push('/dashboard');
-                })
-                .catch(err => this.setState({loginError: err.response.data.error}));
+                },
+                err => this.setState({loginError: err.error}));
         });
     };
 
@@ -49,7 +48,6 @@ class LoginPage extends Component {
     };
 
     render() {
-        console.log(this.props.user);
         if (this.props.user) {
             return <Redirect to='/dashboard'/>;
         }
@@ -84,7 +82,6 @@ class LoginPage extends Component {
                                 </label>
                             </div>
                             <button className="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-                            <p className="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
                         </form>
                     </div>
                 </div>

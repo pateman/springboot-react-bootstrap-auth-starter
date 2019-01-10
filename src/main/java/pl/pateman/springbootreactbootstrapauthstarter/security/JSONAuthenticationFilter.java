@@ -29,7 +29,9 @@ public class JSONAuthenticationFilter extends UsernamePasswordAuthenticationFilt
              InputStreamReader isr = new InputStreamReader(is);
              JsonReader jsonReader = new JsonReader(isr)) {
             JSONAuthenticationForm form = gson.fromJson(jsonReader, JSONAuthenticationForm.class);
-
+            if (form == null) {
+                return null;
+            }
             authRequest = new JSONAuthenticationToken(form.getUsername(), form.getPassword(), form.isRememberMe());
         } catch (IOException e) {
             authRequest = new JSONAuthenticationToken("", "", false);

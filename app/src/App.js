@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {BrowserRouter as Router, Route} from "react-router-dom";
+import AuthService from './services/AuthService/AuthService';
 import LoginPage from './components/LoginPage/LoginPage';
 import DashboardPage from './components/DashboardPage/DashboardPage';
 
@@ -13,8 +14,16 @@ class App extends Component {
         }
     }
 
+    componentDidMount() {
+        AuthService.me(data => {
+            if (data.authenticated) {
+                this.successfulAuthenticationHandler(data);
+            }
+        });
+    }
+
     successfulAuthenticationHandler = (response) => {
-        const data = response.data.principal;
+        const data = response.principal;
         const roles = data.authorities.reduce((last, cur) => {
             last.push(cur.role);
             return last;
@@ -27,17 +36,25 @@ class App extends Component {
         });
     };
 
+    successfulLogoutHandler = () => this.setState({user: null});
+
     render() {
+        const loginRender = (props) => <LoginPage {...props}
+                                                  onLoginSuccess={this.successfulAuthenticationHandler}
+                                                  user={this.state.user}/>;
+        const dashboardRender = (props) => <DashboardPage {...props}
+                                                          onLogoutSuccess={this.successfulLogoutHandler}
+                                                          user={this.state.user}/>;
         return (
             <Router>
                 <div>
                     <Route path='/'
                            exact
-                           render={(props) => <LoginPage {...props}
-                                                         onLoginSuccess={this.successfulAuthenticationHandler}
-                                                         user={this.state.user}/>}/>
+                           render={(p) => this.state.user ? dashboardRender(p) : loginRender(p)}/>
+                    <Route path='/login'
+                           render={loginRender}/>
                     <Route path='/dashboard/'
-                           render={(props) => <DashboardPage {...props} user={this.state.user}/>}/>
+                           render={dashboardRender}/>
                 </div>
             </Router>
         );

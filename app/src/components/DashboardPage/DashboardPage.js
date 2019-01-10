@@ -1,5 +1,6 @@
 import React from 'react';
 import {Redirect} from 'react-router-dom';
+import AuthService from '../../services/AuthService/AuthService';
 
 const dashboardPage = (props) => {
     if (!props.user) {
@@ -15,6 +16,10 @@ const dashboardPage = (props) => {
             <div className="col">
                 <h1>Hello, {props.user.name}!</h1>
                 {specializedParagraph}
+                <a href="/" onClick={(evt) => {
+                    evt.preventDefault();
+                    AuthService.logout(props.onLogoutSuccess)
+                }}>Logout</a>
             </div>
         </div>
     );
